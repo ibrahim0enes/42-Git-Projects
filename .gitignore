@@ -1,0 +1,25 @@
+# Compiled Object files
+*.o
+*.ko
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Executables
+*.out
+*.exe
+a.out
+
+# Vim swap / backup files
+*.swp
+*.swo
+*~
+.*.swp
+
+# macOS
+.DS_Store
+
+# Build artifacts
+/build/
