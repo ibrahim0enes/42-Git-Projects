@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   ft_convert_base2.c                                 :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: colak <colak@student.42istanbul.com.tr>    +#+  +:+       +#+        */
+/*   By: ibcolak <ibcolak@student.42.tr>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/06/20 23:47:48 by colak             #+#    #+#             */
 /*   Updated: 2026/06/21 00:26:41 by colak            ###   ########.fr       */
