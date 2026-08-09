@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Libft Evo Antrenörü</title>
+<style>
+:root{
+  --navy:#0f1b2d; --navy2:#16283f; --red:#7a1f1f; --red2:#b91c1c;
+  --amber:#f59e0b; --cyan:#0891b2; --green:#16a34a;
+  --bg:#f5f6f8; --card:#ffffff; --border:#e3e7ee; --ink:#232a36; --muted:#6b7688;
+  --code-bg:#0d1117; --code-text:#d6deeb;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+  background:var(--bg); color:var(--ink); line-height:1.5;
+}
+/* ---------- LAYOUT ---------- */
+.app{display:flex; min-height:100vh;}
+.sidebar{
+  width:230px; flex-shrink:0; background:linear-gradient(180deg,#0f1b2d 0%,#16283f 100%);
+  color:#dbe6f2; padding:22px 14px; position:sticky; top:0; height:100vh; overflow-y:auto;
+}
+.sidebar .brand{font-size:15px; font-weight:800; color:#fff; margin-bottom:2px;}
+.sidebar .brand-sub{font-size:10px; color:#7fd3e6; letter-spacing:1px; text-transform:uppercase; margin-bottom:22px;}
+.navbtn{
+  display:flex; align-items:center; gap:9px; width:100%; text-align:left; background:none; border:none;
+  color:#b9c6d6; padding:10px 12px; border-radius:8px; font-size:12.5px; cursor:pointer; margin-bottom:3px;
+  font-family:inherit; transition:background .15s;
+}
+.navbtn:hover{background:rgba(255,255,255,.06); color:#fff;}
+.navbtn.active{background:#0891b2; color:#fff; font-weight:700;}
+.navbtn .ico{font-size:14px; width:18px; text-align:center;}
+.sidebar-stats{margin-top:22px; padding-top:16px; border-top:1px solid #28405c; font-size:10.5px; color:#8ea3ba;}
+.sidebar-stats .row{display:flex; justify-content:space-between; margin:6px 0;}
+.sidebar-stats b{color:#eaf2f8;}
+.reset-btn{margin-top:16px; width:100%; background:none; border:1px solid #3a5372; color:#8ea3ba; border-radius:6px; padding:7px; font-size:10px; cursor:pointer;}
+.reset-btn:hover{border-color:#b91c1c; color:#fca5a5;}
+
+.main{flex:1; padding:28px 34px; max-width:1100px;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block; animation:fadein .2s ease;}
+@keyframes fadein{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
+
+h1.page-title{font-size:22px; font-weight:800; color:var(--navy); margin:0 0 4px 0;}
+.page-sub{color:var(--muted); font-size:12.5px; margin-bottom:22px;}
+
+/* ---------- CARDS / GRID ---------- */
+.cards{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; margin-bottom:24px;}
+.stat-card{background:var(--card); border:1px solid var(--border); border-radius:10px; padding:16px 18px;}
+.stat-card .num{font-size:26px; font-weight:800; color:var(--navy);}
+.stat-card .lbl{font-size:11px; color:var(--muted); margin-top:2px;}
+.stat-card.accent{border-left:4px solid var(--cyan);}
+.stat-card.warn{border-left:4px solid var(--amber);}
+.stat-card.danger{border-left:4px solid var(--red2);}
+.stat-card.good{border-left:4px solid var(--green);}
+
+.panel{background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px 22px; margin-bottom:18px;}
+.panel h2{font-size:14px; font-weight:800; color:var(--navy); margin:0 0 10px 0; padding-left:9px; border-left:4px solid var(--cyan);}
+.panel h3{font-size:12px; font-weight:700; color:var(--red); margin:14px 0 6px 0;}
+
+.btn{
+  display:inline-flex; align-items:center; gap:6px; background:var(--cyan); color:#fff; border:none;
+  padding:10px 18px; border-radius:8px; font-size:12.5px; font-weight:700; cursor:pointer; font-family:inherit;
+}
+.btn:hover{background:#0a7189;}
+.btn.secondary{background:#eef1f6; color:var(--ink);}
+.btn.secondary:hover{background:#e2e6ee;}
+.btn.big{padding:14px 26px; font-size:14px; border-radius:10px;}
+.btn.danger{background:var(--red2);}
+.btn.good{background:var(--green);}
+.btn:disabled{opacity:.45; cursor:not-allowed;}
+.btnrow{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;}
+
+select, input[type=number]{
+  font-family:inherit; font-size:12px; padding:8px 10px; border-radius:7px; border:1px solid var(--border); background:#fff;
+}
+label.field-lbl{font-size:11px; font-weight:700; color:var(--muted); display:block; margin-bottom:4px;}
+
+/* ---------- CODE ---------- */
+.codebox{background:var(--code-bg); color:var(--code-text); border-radius:8px; padding:12px 14px; font-family:'Consolas','Liberation Mono',monospace; font-size:12px; line-height:1.55; white-space:pre-wrap; overflow-x:auto;}
+.tok-kw{color:#c792ea;} .tok-type{color:#82aaff;} .tok-str{color:#c3e88d;}
+textarea.codein{
+  width:100%; min-height:280px; background:var(--code-bg); color:var(--code-text); border:1px solid #263449;
+  border-radius:8px; padding:12px 14px; font-family:'Consolas','Liberation Mono',monospace; font-size:12.5px;
+  line-height:1.6; resize:vertical; tab-size:4;
+}
+textarea.codein:focus{outline:2px solid var(--cyan);}
+
+/* ---------- LIVE CODING ---------- */
+.timer{font-size:34px; font-weight:800; font-family:'Consolas',monospace; color:var(--navy);}
+.timer.low{color:var(--red2);}
+.fn-target{
+  display:inline-block; background:#eef7f9; border:1px solid #bfe4ea; color:var(--cyan); font-family:'Consolas',monospace;
+  font-size:15px; font-weight:700; padding:8px 14px; border-radius:8px; margin:8px 0;
+}
+.live-setup{display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end; margin-bottom:6px;}
+.live-header{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;}
+.rate-row{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap;}
+.rate-btn{flex:1; min-width:140px; padding:12px; border-radius:9px; border:2px solid var(--border); background:#fff; cursor:pointer; font-family:inherit; font-weight:700; font-size:12px;}
+.rate-btn.ok{border-color:var(--green); color:var(--green);}
+.rate-btn.ok:hover{background:#eafaf0;}
+.rate-btn.partial{border-color:var(--amber); color:#b45309;}
+.rate-btn.partial:hover{background:#fff7e6;}
+.rate-btn.bad{border-color:var(--red2); color:var(--red2);}
+.rate-btn.bad:hover{background:#fdeeee;}
+.hint-box{background:#fff7e6; border:1px solid #f3d896; border-radius:8px; padding:10px 13px; font-size:11.5px; margin:10px 0;}
+.hint-box b{color:#b45309;}
+.edge-box{background:#fdeeee; border:1px solid #f2c2c2; border-radius:8px; padding:10px 13px; font-size:11.5px; margin:10px 0;}
+.edge-box b{color:#b91c1c;}
+
+/* ---------- FLASHCARDS ---------- */
+.flash-wrap{display:flex; flex-direction:column; align-items:center; padding:10px 0 6px 0;}
+.flashcard{
+  width:100%; max-width:560px; min-height:220px; background:linear-gradient(160deg,#0f1b2d,#16283f);
+  color:#fff; border-radius:16px; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  text-align:center; padding:30px; cursor:pointer; user-select:none; box-shadow:0 8px 24px rgba(15,27,45,.18);
+}
+.flashcard .fc-label{font-size:10px; letter-spacing:2px; color:#7fd3e6; text-transform:uppercase; margin-bottom:10px;}
+.flashcard .fc-name{font-family:'Consolas',monospace; font-size:22px; font-weight:800;}
+.flashcard .fc-sig{font-family:'Consolas',monospace; font-size:12px; color:#b9c6d6; margin-top:6px;}
+.flashcard .fc-hint{font-size:13px; color:#e6f4f7; margin-top:14px; line-height:1.6;}
+.flashcard .fc-edge{font-size:11.5px; color:#ffd7a8; margin-top:10px;}
+.flash-nav{display:flex; gap:10px; align-items:center; margin-top:16px;}
+.flash-progress{font-size:11px; color:var(--muted);}
+.flash-filter{display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;}
+.chip{padding:6px 13px; border-radius:20px; border:1px solid var(--border); background:#fff; font-size:11px; cursor:pointer; font-family:inherit;}
+.chip.active{background:var(--navy); color:#fff; border-color:var(--navy);}
+
+/* ---------- CHECKLIST ---------- */
+.group-block{margin-bottom:16px;}
+.group-title{background:var(--red); color:#fff; padding:8px 12px; border-radius:7px 7px 0 0; font-size:11.5px; font-weight:700; display:flex; justify-content:space-between;}
+.group-body{border:1px solid var(--border); border-top:none; border-radius:0 0 7px 7px; overflow:hidden;}
+.check-row{display:flex; align-items:center; gap:10px; padding:8px 12px; border-bottom:1px solid #f0f1f4; font-size:11.5px;}
+.check-row:last-child{border-bottom:none;}
+.check-row:nth-child(even){background:#faf9fb;}
+.check-row input{width:16px; height:16px; accent-color:var(--green); cursor:pointer;}
+.check-row .fname{font-family:'Consolas',monospace; font-weight:700; color:var(--navy); width:150px; flex-shrink:0;}
+.check-row .fcov{color:var(--muted); flex:1;}
+.check-row.done .fname{text-decoration:line-through; opacity:.55;}
+.progress-bar-outer{background:#eef1f6; border-radius:20px; height:8px; overflow:hidden; margin:6px 0 14px 0;}
+.progress-bar-inner{background:var(--green); height:100%; transition:width .3s;}
+
+/* ---------- MOCK EVAL ---------- */
+.mock-step{display:none;}
+.mock-step.active{display:block;}
+.mock-progress-dots{display:flex; gap:6px; margin-bottom:18px;}
+.dot{width:26px; height:6px; border-radius:4px; background:var(--border);}
+.dot.done{background:var(--green);}
+.dot.current{background:var(--cyan);}
+.report-card{background:linear-gradient(160deg,#0f1b2d,#16283f); color:#fff; border-radius:14px; padding:26px 28px;}
+.report-card h2{color:#7fd3e6; border:none; padding:0; margin-top:0;}
+.report-score{font-size:44px; font-weight:800; color:#fff;}
+.report-row{display:flex; justify-content:space-between; padding:7px 0; border-bottom:1px solid rgba(255,255,255,.12); font-size:12px;}
+.flag-pill{display:inline-block; padding:3px 10px; border-radius:12px; font-size:10px; font-weight:700; margin:2px 4px 2px 0;}
+.flag-pill.ok{background:#16a34a;} .flag-pill.risk{background:#b91c1c;}
+
+/* ---------- INFO / FLAGS TAB ---------- */
+.flag-card{border:1px solid var(--border); border-radius:9px; padding:11px 14px; margin:8px 0;}
+.flag-card.bad{border-left:4px solid var(--red2);}
+.flag-card.good{border-left:4px solid var(--green);}
+.flag-card.warn{border-left:4px solid var(--amber);}
+.flag-card b{font-size:12px;}
+
+table.info-table{width:100%; border-collapse:collapse; font-size:11.5px; margin:10px 0;}
+table.info-table th{background:var(--navy); color:#fff; text-align:left; padding:7px 9px;}
+table.info-table td{padding:6px 9px; border-bottom:1px solid #eef0f4;}
+table.info-table tr:nth-child(even) td{background:#faf9fb;}
+
+.toast{
+  position:fixed; bottom:20px; right:20px; background:var(--navy); color:#fff; padding:12px 18px;
+  border-radius:8px; font-size:12px; box-shadow:0 6px 18px rgba(0,0,0,.2); opacity:0; transform:translateY(10px);
+  transition:all .25s; pointer-events:none; z-index:999;
+}
+.toast.show{opacity:1; transform:none;}
+
+@media (max-width:800px){
+  .app{flex-direction:column;}
+  .sidebar{width:100%; height:auto; position:relative;}
+  .main{padding:18px;}
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">Libft Evo Antrenörü</div>
+    <div class="brand-sub">ibcolak &middot; 42</div>
+    <nav id="nav"></nav>
+    <div class="sidebar-stats" id="sidebarStats"></div>
+    <button class="reset-btn" id="resetBtn">İlerlemeyi sıfırla</button>
+  </aside>
+  <main class="main">
+    <section class="tab-panel" id="tab-ozet"></section>
+    <section class="tab-panel" id="tab-canli"></section>
+    <section class="tab-panel" id="tab-kart"></section>
+    <section class="tab-panel" id="tab-checklist"></section>
+    <section class="tab-panel" id="tab-mock"></section>
+    <section class="tab-panel" id="tab-bilgi"></section>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+/* ==================================================================
+   VERI: 43 fonksiyon (kaynak kodu bu proje icin dogrulanan son haliyle)
+   ================================================================== */
+const FUNCTIONS = [
+// ---- LIBC FUNCTIONS #1 ----
+{name:"ft_strlen", part:1, group:"Libc Functions #1", sig:"(const char *s)",
+ src:"size_t\tft_strlen(const char *s)\n{\n\tsize_t\tlen;\n\n\tlen = 0;\n\twhile (s[len] != '\\0')\n\t\tlen++;\n\treturn (len);\n}",
+ hint:"'\\0'e kadar say.", edge:"Çok uzun bir string (1000+ karakter) ile dene.",
+ cov:"boş string ve 7 karakterlik string ile test edildi"},
+{name:"ft_memcpy", part:1, group:"Libc Functions #1", sig:"(void *dst, const void *src, size_t n)",
+ src:"void\t*ft_memcpy(void *dst, const void *src, size_t n)\n{\n\tunsigned char\t\t*d;\n\tconst unsigned char\t*s;\n\n\td = (unsigned char *)dst;\n\ts = (const unsigned char *)src;\n\tif (!dst && !src)\n\t\treturn (NULL);\n\twhile (n--)\n\t{\n\t\t*d++ = *s++;\n\t}\n\treturn (dst);\n}",
+ hint:"Byte byte kopyala; dst&&src NULL ise NULL dön.", edge:"n = 0 ile çağır, çökmemeli.",
+ cov:"üst üste binmeyen 10 byte'lık kopya, memcmp ile doğrulandı"},
+{name:"ft_memset", part:1, group:"Libc Functions #1", sig:"(void *b, int c, size_t len)",
+ src:"void\t*ft_memset(void *b, int c, size_t len)\n{\n\tunsigned char\t*ptr;\n\tunsigned char\tvalue;\n\n\tptr = (unsigned char *)b;\n\tvalue = (unsigned char)c;\n\twhile (len--)\n\t{\n\t\t*ptr++ = value;\n\t}\n\treturn (b);\n}",
+ hint:"unsigned char* cast, len kere *ptr++ = value.", edge:"len = 0 ile çağır.",
+ cov:"10 byte 'X' ile dolduruldu, memcmp ile karşılaştırıldı"},
+{name:"ft_bzero", part:1, group:"Libc Functions #1", sig:"(void *s, size_t n)",
+ src:"void\tft_bzero(void *s, size_t n)\n{\n\tft_memset(s, 0, n);\n}",
+ hint:"ft_memset(s, 0, n) çağır.", edge:"Zaten sıfır olan bir alanda tekrar çağır.",
+ cov:"10 byte sıfırlandı, ilk/son byte kontrol edildi"},
+{name:"ft_memmove", part:1, group:"Libc Functions #1", sig:"(void *dest, const void *src, size_t n)",
+ src:"void\t*ft_memmove(void *dest, const void *src, size_t n)\n{\n\tunsigned char\t\t*d;\n\tconst unsigned char\t*s;\n\n\td = (unsigned char *)dest;\n\ts = (const unsigned char *)src;\n\twhile (n--)\n\t{\n\t\tif (d < s)\n\t\t\t*d++ = *s++;\n\t\telse\n\t\t\t*(d + n) = *(s + n);\n\t}\n\treturn (dest);\n}",
+ hint:"d < s ise baştan; değilse *(d+n)=*(s+n) ile sondan kopyala.", edge:"dest == src (aynı adres) ile çağır.",
+ cov:"üst üste binen 10 byte'lık taşıma, gerçek memmove ile karşılaştırıldı"},
+{name:"ft_memcmp", part:1, group:"Libc Functions #1", sig:"(const void *s1, const void *s2, size_t n)",
+ src:"int\tft_memcmp(const void *s1, const void *s2, size_t n)\n{\n\tconst unsigned char\t*p1;\n\tconst unsigned char\t*p2;\n\n\tp1 = (const unsigned char *)s1;\n\tp2 = (const unsigned char *)s2;\n\twhile (n--)\n\t{\n\t\tif (*p1 != *p2)\n\t\t\treturn (*p1 - *p2);\n\t\tp1++;\n\t\tp2++;\n\t}\n\treturn (0);\n}",
+ hint:"(unsigned char) farkı döndür.", edge:"İki alanın sadece son byte'ı farklıyken dene.",
+ cov:"küçük/eşit/büyük üç durum test edildi"},
+{name:"ft_memchr", part:1, group:"Libc Functions #1", sig:"(const void *s, int c, size_t n)",
+ src:"void\t*ft_memchr(const void *s, int c, size_t n)\n{\n\tunsigned char\t*ptr;\n\tunsigned char\tch;\n\n\tptr = (unsigned char *)s;\n\tch = (unsigned char)c;\n\twhile (n--)\n\t{\n\t\tif (*ptr == ch)\n\t\t\treturn (ptr);\n\t\tptr++;\n\t}\n\treturn (NULL);\n}",
+ hint:"Byte byte ara, bulunca pointer döndür.", edge:"Aranan byte tam n'inci pozisyondayken dene.",
+ cov:"bulunan ve bulunamayan durum test edildi"},
+// ---- LIBC FUNCTIONS #2 ----
+{name:"ft_isalpha", part:1, group:"Libc Functions #2", sig:"(int c)",
+ src:"int\tft_isalpha(int c)\n{\n\tif ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))\n\t\treturn (1);\n\treturn (0);\n}",
+ hint:"'A'-'Z' || 'a'-'z' -> 1/0.", edge:"Sınır değerler: 'Z', 'a', '@' (harften hemen önceki ASCII).",
+ cov:"harf ve harf olmayan (rakam, boşluk) test edildi"},
+{name:"ft_isdigit", part:1, group:"Libc Functions #2", sig:"(int c)",
+ src:"int\tft_isdigit(int c)\n{\n\tif (c >= '0' && c <= '9')\n\t\treturn (1);\n\treturn (0);\n}",
+ hint:"'0'-'9' -> 1/0.", edge:"':' (rakamdan hemen sonraki ASCII).",
+ cov:"'0'-'9' ve 'a' test edildi"},
+{name:"ft_isalnum", part:1, group:"Libc Functions #2", sig:"(int c)",
+ src:"int\tft_isalnum(int c)\n{\n\tif (ft_isalpha(c) || ft_isdigit(c))\n\t\treturn (1);\n\treturn (0);\n}",
+ hint:"ft_isalpha(c) || ft_isdigit(c).", edge:"Boşluk karakteri ile dene.",
+ cov:"harf, rakam, '!' test edildi"},
+{name:"ft_isascii", part:1, group:"Libc Functions #2", sig:"(int c)",
+ src:"int\tft_isascii(int c)\n{\n\tif (c >= 0 && c <= 127)\n\t\treturn (1);\n\treturn (0);\n}",
+ hint:"0 <= c <= 127.", edge:"256 ve -128 gibi aralık dışı değerler.",
+ cov:"0, 127, 128, -1 sınır değerleriyle test edildi"},
+{name:"ft_isprint", part:1, group:"Libc Functions #2", sig:"(int c)",
+ src:"int\tft_isprint(int c)\n{\n\tif (c >= 32 && c <= 126)\n\t\treturn (1);\n\treturn (0);\n}",
+ hint:"32 <= c <= 126.", edge:"127 (DEL) ve 31 (birim ayırıcı) sınır değerleri.",
+ cov:"'a', ' ', '\\\\n' test edildi"},
+// ---- LIBC FUNCTIONS #3 ----
+{name:"ft_toupper", part:1, group:"Libc Functions #3", sig:"(int c)",
+ src:"int\tft_toupper(int c)\n{\n\tif (c >= 'a' && c <= 'z')\n\t\treturn (c - 32);\n\treturn (c);\n}",
+ hint:"'a'-'z' ise c - 32.", edge:"Zaten büyük harf olan bir karakterle dene.",
+ cov:"'a', 'Z', '5' test edildi"},
+{name:"ft_tolower", part:1, group:"Libc Functions #3", sig:"(int c)",
+ src:"int\tft_tolower(int c)\n{\n\tif (c >= 'A' && c <= 'Z')\n\t\treturn (c + 32);\n\treturn (c);\n}",
+ hint:"'A'-'Z' ise c + 32.", edge:"'A' ve rakam ile dene.",
+ cov:"kapsamlı test yok, ft_toupper'ın simetriği"},
+{name:"ft_strchr", part:1, group:"Libc Functions #3", sig:"(const char *s, int c)",
+ src:"char\t*ft_strchr(const char *s, int c)\n{\n\twhile (*s)\n\t{\n\t\tif (*s == (char)c)\n\t\t\treturn ((char *)s);\n\t\ts++;\n\t}\n\tif ((char)c == '\\0')\n\t\treturn ((char *)s);\n\treturn (NULL);\n}",
+ hint:"İlk eşleşme; c=='\\0' özel durumunu unutma.", edge:"Karakterin string'in ilk pozisyonunda olduğu durum.",
+ cov:"bulundu / bulunamadı / c = '\\\\0' durumları test edildi"},
+{name:"ft_strrchr", part:1, group:"Libc Functions #3", sig:"(const char *s, int c)",
+ src:"char\t*ft_strrchr(const char *s, int c)\n{\n\tconst char\t*last;\n\n\tlast = NULL;\n\twhile (*s)\n\t{\n\t\tif (*s == (char)c)\n\t\t\tlast = s;\n\t\ts++;\n\t}\n\tif ((char)c == '\\0')\n\t\treturn ((char *)s);\n\treturn ((char *)last);\n}",
+ hint:"last değişkeniyle EN SON eşleşmeyi tut.", edge:"Karakter string'te sadece bir kez geçiyorsa (ilk=son).",
+ cov:"son görülen pozisyon ve bulunamadı durumu test edildi"},
+// ---- LIBC FUNCTIONS #4 ----
+{name:"ft_strlcat", part:1, group:"Libc Functions #4", sig:"(char *dst, const char *src, size_t size)",
+ src:"size_t\tft_strlcat(char *dst, const char *src, size_t size)\n{\n\tsize_t\tdst_len;\n\tsize_t\tsrc_len;\n\tsize_t\ti;\n\n\tif (dst == NULL || src == NULL)\n\t\treturn (0);\n\tdst_len = ft_strlen(dst);\n\tsrc_len = ft_strlen(src);\n\tif (size <= dst_len)\n\t\treturn (size + src_len);\n\ti = 0;\n\twhile (src[i] && (dst_len + i) < (size - 1))\n\t{\n\t\tdst[dst_len + i] = src[i];\n\t\ti++;\n\t}\n\tdst[dst_len + i] = '\\0';\n\treturn (dst_len + src_len);\n}",
+ hint:"dst_len bul; size<=dst_len ise erken çık; değilse ekle.", edge:"size, dst'nin şu anki uzunluğundan küçükken çağır.",
+ cov:"yeterli alan ve kırpma+truncation tespiti test edildi"},
+{name:"ft_strlcpy", part:1, group:"Libc Functions #4", sig:"(char *dst, const char *src, size_t size)",
+ src:"size_t\tft_strlcpy(char *dst, const char *src, size_t size)\n{\n\tsize_t\tsrc_len;\n\tsize_t\ti;\n\n\tif (dst == NULL || src == NULL)\n\t\treturn (0);\n\tsrc_len = ft_strlen(src);\n\tif (size == 0)\n\t\treturn (src_len);\n\ti = 0;\n\twhile (i < size - 1 && src[i])\n\t{\n\t\tdst[i] = src[i];\n\t\ti++;\n\t}\n\tdst[i] = '\\0';\n\treturn (src_len);\n}",
+ hint:"size-1'e kadar kopyala, HER ZAMAN strlen(src) döndür.", edge:"size = 0 ile çağır, dst'ye dokunmamalı.",
+ cov:"yeterli alan ve kırpma (size=5) test edildi"},
+{name:"ft_atoi", part:1, group:"Libc Functions #4", sig:"(const char *nptr)",
+ src:"int\tft_atoi(const char *nptr)\n{\n\tint\t\tsign;\n\tlong\tresult;\n\n\tsign = 1;\n\tresult = 0;\n\tif (nptr == NULL)\n\t\treturn (0);\n\twhile (*nptr == ' ' || (*nptr >= 9 && *nptr <= 13))\n\t\tnptr++;\n\twhile (*nptr == '+' || *nptr == '-')\n\t{\n\t\tif (*nptr == '-')\n\t\t\tsign *= -1;\n\t\tnptr++;\n\t}\n\twhile (*nptr >= '0' && *nptr <= '9')\n\t{\n\t\tresult = result * 10 + (*nptr - '0');\n\t\tnptr++;\n\t}\n\treturn (result * sign);\n}",
+ hint:"Boşluk atla -> +/- işaret -> rakamları topla (long ile!).", edge:"Başında sadece işaret olup rakam olmayan bir string (\"-abc\").",
+ cov:"temel durumlar + INT_MAX + INT_MIN test edildi"},
+{name:"ft_strnstr", part:1, group:"Libc Functions #4", sig:"(const char *big, const char *little, size_t len)",
+ src:"char\t*ft_strnstr(const char *big, const char *little, size_t len)\n{\n\tsize_t\ti;\n\tsize_t\tj;\n\n\tif (little[0] == '\\0')\n\t\treturn ((char *)big);\n\ti = 0;\n\twhile (big[i] && i < len)\n\t{\n\t\tif (big[i] == little[0])\n\t\t{\n\t\t\tj = 0;\n\t\t\twhile (little[j] && big[i + j] == little[j] && (i + j) < len)\n\t\t\t\tj++;\n\t\t\tif (little[j] == '\\0')\n\t\t\t\treturn ((char *)(big + i));\n\t\t}\n\t\ti++;\n\t}\n\treturn (NULL);\n}",
+ hint:"little[0]=='\\0' özel durum; iç döngüde j ile karşılaştır.", edge:"little, big'den uzunken dene.",
+ cov:"bulundu / len sınırı dışında / boş little test edildi"},
+{name:"ft_strncmp", part:1, group:"Libc Functions #4", sig:"(const char *s1, const char *s2, size_t n)",
+ src:"int\tft_strncmp(const char *s1, const char *s2, size_t n)\n{\n\tsize_t\ti;\n\n\ti = 0;\n\twhile (i < n)\n\t{\n\t\tif (s1[i] != s2[i])\n\t\t\treturn ((unsigned char)s1[i] - (unsigned char)s2[i]);\n\t\tif (s1[i] == '\\0' || s2[i] == '\\0')\n\t\t\treturn (0);\n\t\ti++;\n\t}\n\treturn (0);\n}",
+ hint:"(unsigned char) farkı döndür; '\\0' -> erken 0.", edge:"n = 0 ile çağır (her zaman 0 dönmeli).",
+ cov:"kapsamlı test yok, elle doğrulanmalı"},
+{name:"ft_calloc", part:1, group:"Libc Functions #4", sig:"(size_t nmemb, size_t size)",
+ src:"void\t*ft_calloc(size_t nmemb, size_t size)\n{\n\tvoid\t*ptr;\n\n\tif (nmemb != 0 && size > (size_t) - 1 / nmemb)\n\t\treturn (NULL);\n\tptr = malloc(size * nmemb);\n\tif (!ptr)\n\t\treturn (NULL);\n\tft_memset(ptr, 0, size * nmemb);\n\treturn (ptr);\n}",
+ hint:"Çarpma taşması kontrolü -> malloc -> memset(0).", edge:"nmemb = 0 ile çağır (NULL değil, geçerli bir pointer dönmeli).",
+ cov:"allocation başarılı + bellek sıfırlanmış test edildi"},
+{name:"ft_strdup", part:1, group:"Libc Functions #4", sig:"(const char *s)",
+ src:"char\t*ft_strdup(const char *s)\n{\n\tchar\t*ptr;\n\tchar\t*start;\n\tsize_t\tlen;\n\n\tlen = ft_strlen(s);\n\tptr = (char *)malloc(len + 1);\n\tif (!ptr)\n\t\treturn (NULL);\n\tstart = ptr;\n\twhile (len--)\n\t\t*ptr++ = *s++;\n\t*ptr = '\\0';\n\treturn (start);\n}",
+ hint:"strlen+1 malloc, karakter karakter kopyala, '\\0' ekle.", edge:"Boş string (\"\") ile dene.",
+ cov:"kopyalama ve içerik eşitliği test edildi"},
+// ---- ADDITIONAL FUNCTIONS #1 ----
+{name:"ft_substr", part:2, group:"Additional Functions #1", sig:"(char const *s, unsigned int start, size_t len)",
+ src:"char\t*ft_substr(char const *s, unsigned int start, size_t len)\n{\n\tsize_t\ti;\n\tsize_t\ts_len;\n\tchar\t*str;\n\n\tif (!s)\n\t\treturn (NULL);\n\ts_len = ft_strlen(s);\n\tif (start >= s_len)\n\t\treturn (ft_strdup(\"\"));\n\tif (len > s_len - start)\n\t\tlen = s_len - start;\n\tstr = malloc(sizeof(char) * (len + 1));\n\tif (!str)\n\t\treturn (NULL);\n\ti = 0;\n\twhile (i < len && s[start + i] != '\\0')\n\t{\n\t\tstr[i] = s[start + i];\n\t\ti++;\n\t}\n\tstr[i] = '\\0';\n\treturn (str);\n}",
+ hint:"start >= s_len ise boş string dön; len taşarsa kırp.", edge:"len = 0 ile çağır (boş string dönmeli).",
+ cov:"normal durum, start >= strlen, len taşması test edildi"},
+{name:"ft_strjoin", part:2, group:"Additional Functions #1", sig:"(char const *s1, char const *s2)",
+ src:"static void\tft_strjoin_copy(char *dst, const char *src, size_t len)\n{\n\tsize_t\ti;\n\n\ti = 0;\n\twhile (i < len)\n\t{\n\t\tdst[i] = src[i];\n\t\ti++;\n\t}\n}\n\nchar\t*ft_strjoin(char const *s1, char const *s2)\n{\n\tchar\t*collab;\n\tsize_t\ts1_len;\n\tsize_t\ts2_len;\n\n\tif (!s1 || !s2)\n\t\treturn (NULL);\n\ts1_len = ft_strlen(s1);\n\ts2_len = ft_strlen(s2);\n\tcollab = malloc(s1_len + s2_len + 1);\n\tif (!collab)\n\t\treturn (NULL);\n\tft_strjoin_copy(collab, s1, s1_len);\n\tft_strjoin_copy(collab + s1_len, s2, s2_len);\n\tcollab[s1_len + s2_len] = '\\0';\n\treturn (collab);\n}",
+ hint:"s1_len+s2_len+1 malloc, iki parçayı sırayla kopyala.", edge:"İki boş string birleştir.",
+ cov:"normal durum ve boş s1 test edildi"},
+{name:"ft_putchar_fd", part:2, group:"Additional Functions #1", sig:"(char c, int fd)",
+ src:"void\tft_putchar_fd(char c, int fd)\n{\n\twrite(fd, &c, 1);\n}",
+ hint:"write(fd, &c, 1).", edge:"fd = 2 (stderr) ile dene.",
+ cov:"görsel doğrulama (Beklenen/Gerçek karşılaştırması)"},
+{name:"ft_putstr_fd", part:2, group:"Additional Functions #1", sig:"(char *s, int fd)",
+ src:"void\tft_putstr_fd(char *s, int fd)\n{\n\tint\ti;\n\n\tif (!s)\n\t\treturn ;\n\ti = 0;\n\twhile (s[i] != '\\0')\n\t{\n\t\twrite(fd, &s[i], 1);\n\t\ti++;\n\t}\n}",
+ hint:"NULL kontrolü, karakter karakter write.", edge:"NULL string ile çağır, çökmemeli.",
+ cov:"görsel doğrulama yapıldı"},
+{name:"ft_putendl_fd", part:2, group:"Additional Functions #1", sig:"(char *s, int fd)",
+ src:"void\tft_putendl_fd(char *s, int fd)\n{\n\tint\ti;\n\n\tif (!s)\n\t\treturn ;\n\ti = 0;\n\twhile (s[i])\n\t{\n\t\twrite(fd, &s[i], 1);\n\t\ti++;\n\t}\n\twrite(fd, \"\\n\", 1);\n}",
+ hint:"putstr gibi ama sonda write(fd,\"\\\\n\",1).", edge:"Boş string (\"\") ile çağır, sadece \\\\n yazmalı.",
+ cov:"görsel doğrulama yapıldı"},
+{name:"ft_putnbr_fd", part:2, group:"Additional Functions #1", sig:"(int n, int fd)",
+ src:"void\tft_putnbr_fd(int n, int fd)\n{\n\tchar\tc;\n\tlong\tnum;\n\n\tnum = n;\n\tif (num < 0)\n\t{\n\t\tnum = -num;\n\t\twrite(fd, \"-\", 1);\n\t}\n\tif (num > 9)\n\t{\n\t\tft_putnbr_fd(num / 10, fd);\n\t\tft_putnbr_fd(num % 10, fd);\n\t}\n\telse\n\t{\n\t\tc = (num % 10) + '0';\n\t\twrite(fd, &c, 1);\n\t}\n}",
+ hint:"Özyinelemeli: num>9 ise num/10'u önce yazdır, taban durumu ELSE içinde.", edge:"INT_MIN (-2147483648) ile dene, en riskli durum.",
+ cov:"negatif sayı ve 0 görsel olarak doğrulandı"},
+// ---- ADDITIONAL FUNCTIONS #2 ----
+{name:"ft_strmapi", part:2, group:"Additional Functions #2", sig:"(char const *s, char (*f)(unsigned int, char))",
+ src:"char\t*ft_strmapi(char const *s, char (*f)(unsigned int, char))\n{\n\tchar\t*result;\n\tsize_t\ti;\n\tsize_t\tlen;\n\n\tlen = ft_strlen(s);\n\tresult = malloc(len + 1);\n\tif (!result)\n\t\treturn (NULL);\n\ti = 0;\n\twhile (i < len)\n\t{\n\t\tresult[i] = f(i, s[i]);\n\t\ti++;\n\t}\n\tresult[len] = '\\0';\n\treturn (result);\n}",
+ hint:"Her karaktere f(i,s[i]) uygula, YENİ string'e yaz.", edge:"Boş string ile çağır.",
+ cov:"harfleri büyütme fonksiyonuyla test edildi"},
+{name:"ft_striteri", part:2, group:"Additional Functions #2", sig:"(char *s, void (*f)(unsigned int, char*))",
+ src:"void\tft_striteri(char *s, void (*f)(unsigned int, char*))\n{\n\tunsigned int\ti;\n\n\tif (!s || !f)\n\t\treturn ;\n\ti = 0;\n\twhile (s[i] != '\\0')\n\t{\n\t\tf(i, &s[i]);\n\t\ti++;\n\t}\n}",
+ hint:"f'e &s[i] (adres) ver, orijinali YERİNDE değiştir.", edge:"Orijinal string'in gerçekten değiştiğini göster.",
+ cov:"çift index'lere '*' koyan fonksiyonla test edildi"},
+{name:"ft_strtrim", part:2, group:"Additional Functions #2", sig:"(char const *s1, char const *set)",
+ src:"char\t*ft_strtrim(char const *s1, char const *set)\n{\n\tsize_t\tstart;\n\tsize_t\tend;\n\n\tif (!s1)\n\t\treturn (NULL);\n\tif (!set)\n\t\treturn (ft_substr(s1, 0, ft_strlen(s1)));\n\tstart = 0;\n\tend = ft_strlen(s1);\n\twhile (start < end && ft_strchr(set, s1[start]))\n\t\tstart++;\n\twhile (end > start && ft_strchr(set, s1[end - 1]))\n\t\tend--;\n\treturn (ft_substr(s1, start, end - start));\n}",
+ hint:"start/end indekslerini kırp, ft_substr'a devret.", edge:"set = \"\" (boş) ile çağır.",
+ cov:"boşluk, özel karakter, hepsi kırpılan durum test edildi"},
+{name:"ft_split", part:2, group:"Additional Functions #2", sig:"(char const *s, char c)",
+ src:"static int\tft_countwords(const char *s, char c)\n{\n\tint\tcount;\n\n\tcount = 0;\n\twhile (*s)\n\t{\n\t\tif (*s != c)\n\t\t{\n\t\t\tcount++;\n\t\t\twhile (*s && *s != c)\n\t\t\t\ts++;\n\t\t}\n\t\telse\n\t\t\ts++;\n\t}\n\treturn (count);\n}\n\nstatic char\t*ft_write_word(const char *s, char c)\n{\n\tchar\t*result;\n\tint\t\ti;\n\n\ti = 0;\n\twhile (s[i] && s[i] != c)\n\t\ti++;\n\tresult = malloc(sizeof(char) * (i + 1));\n\tif (!result)\n\t\treturn (NULL);\n\ti = 0;\n\twhile (s[i] && s[i] != c)\n\t{\n\t\tresult[i] = s[i];\n\t\ti++;\n\t}\n\tresult[i] = '\\0';\n\treturn (result);\n}\n\nstatic void\tft_split_free(char **result, int j)\n{\n\twhile (j > 0)\n\t\tfree(result[--j]);\n\tfree(result);\n}\n\nstatic int\tft_split_fill(const char *s, int *i, char c, char **slot)\n{\n\t*slot = ft_write_word(&s[*i], c);\n\tif (!*slot)\n\t\treturn (-1);\n\twhile (s[*i] && s[*i] != c)\n\t\t(*i)++;\n\treturn (0);\n}\n\nchar\t**ft_split(char const *s, char c)\n{\n\tchar\t**result;\n\tint\t\ti;\n\tint\t\tj;\n\n\tif (!s)\n\t\treturn (NULL);\n\ti = 0;\n\tj = 0;\n\tresult = malloc(sizeof(char *) * (ft_countwords(s, c) + 1));\n\tif (!result)\n\t\treturn (NULL);\n\twhile (s[i])\n\t{\n\t\tif (s[i] == c)\n\t\t\ti++;\n\t\telse if (ft_split_fill(s, &i, c, &result[j++]) == -1)\n\t\t\treturn (ft_split_free(result, j), NULL);\n\t}\n\tresult[j] = NULL;\n\treturn (result);\n}",
+ hint:"Önce kelime say (countwords), sonra her kelimeyi kopyala (write_word), hata olursa temizle (split_free).", edge:"Baştan/sondan ayırıcı ile başlayan/biten string (\" a b \").",
+ cov:"normal cümle ve sadece ayırıcılardan oluşan string test edildi"},
+{name:"ft_itoa", part:2, group:"Additional Functions #2", sig:"(int n)",
+ src:"static size_t\tft_find_size(int n)\n{\n\tsize_t\tlen;\n\tlong\tnum;\n\n\tnum = n;\n\tlen = 0;\n\tif (num <= 0)\n\t{\n\t\tlen++;\n\t\tnum = -num;\n\t}\n\twhile (num > 0)\n\t{\n\t\tnum /= 10;\n\t\tlen++;\n\t}\n\treturn (len);\n}\n\nchar\t*ft_itoa(int n)\n{\n\tchar\t*str;\n\tint\t\tlen;\n\tlong\tnum;\n\n\tnum = n;\n\tlen = ft_find_size(num);\n\tstr = (char *)malloc(sizeof(char) * (len + 1));\n\tif (!str)\n\t\treturn (NULL);\n\tstr[len] = '\\0';\n\tif (num == 0)\n\t\tstr[0] = '0';\n\tif (num < 0)\n\t{\n\t\tstr[0] = '-';\n\t\tnum = -num;\n\t}\n\twhile (num > 0)\n\t{\n\t\tstr[--len] = (num % 10) + '0';\n\t\tnum /= 10;\n\t}\n\treturn (str);\n}",
+ hint:"Boyutu hesapla, sondan başa doğru str[--len] ile doldur.", edge:"INT_MAX (2147483647) ile dene.",
+ cov:"pozitif, negatif, sıfır, INT_MIN test edildi"},
+// ---- LINKED LIST FUNCTIONS #1 ----
+{name:"ft_lstnew", part:3, group:"Linked List Functions #1", sig:"(void *content)",
+ src:"t_list\t*ft_lstnew(void *content)\n{\n\tt_list\t*node;\n\n\tnode = (t_list *)malloc(sizeof(t_list));\n\tif (!node)\n\t\treturn (NULL);\n\tnode->content = content;\n\tnode->next = NULL;\n\treturn (node);\n}",
+ hint:"malloc(t_list), content ata, next = NULL.", edge:"content olarak NULL ile çağır, hâlâ geçerli bir node dönmeli.",
+ cov:"content ve next == NULL kontrolü yapıldı"},
+{name:"ft_lstdelone", part:3, group:"Linked List Functions #1", sig:"(t_list *lst, void (*del)(void*))",
+ src:"void\tft_lstdelone(t_list *lst, void (*del)(void*))\n{\n\tif (!lst || !del)\n\t\treturn ;\n\tdel(lst->content);\n\tfree(lst);\n}",
+ hint:"del(lst->content) sonra free(lst); next'e dokunma.", edge:"Tek elemanlı bir node ile elle çağırıp del fonksiyonunun çalıştığını göster.",
+ cov:"kapsamlı test yok (ft_lstclear üzerinden dolaylı test edildi)"},
+{name:"ft_lstclear", part:3, group:"Linked List Functions #1", sig:"(t_list **lst, void (*del)(void*))",
+ src:"void\tft_lstclear(t_list **lst, void (*del)(void*))\n{\n\tt_list\t*temp;\n\n\tif (!lst || !*lst || !del)\n\t\treturn ;\n\twhile (*lst)\n\t{\n\t\ttemp = (*lst)->next;\n\t\tft_lstdelone(*lst, del);\n\t\t*lst = temp;\n\t}\n\t*lst = NULL;\n}",
+ hint:"temp = (*lst)->next KAYDET, sonra sil, sonra *lst = temp.", edge:"Zaten boş bir liste (*lst == NULL) ile çağır, çökmemeli.",
+ cov:"pointer'ın NULL'landığı doğrulandı"},
+{name:"ft_lstadd_front", part:3, group:"Linked List Functions #1", sig:"(t_list **lst, t_list *new)",
+ src:"void\tft_lstadd_front(t_list **lst, t_list *new)\n{\n\tif (!lst || !new)\n\t\treturn ;\n\tnew->next = *lst;\n\t*lst = new;\n}",
+ hint:"new->next = *lst, sonra *lst = new.", edge:"new == NULL ile çağır, hiçbir şey değişmemeli.",
+ cov:"boş listeye ve dolu listeye ekleme test edildi"},
+{name:"ft_lstadd_back", part:3, group:"Linked List Functions #1", sig:"(t_list **lst, t_list *new)",
+ src:"void\tft_lstadd_back(t_list **lst, t_list *new)\n{\n\tt_list\t*last;\n\n\tif (!lst || !new)\n\t\treturn ;\n\tif (*lst == NULL)\n\t{\n\t\t*lst = new;\n\t\treturn ;\n\t}\n\tlast = *lst;\n\twhile (last->next != NULL)\n\t\tlast = last->next;\n\tlast->next = new;\n}",
+ hint:"Boşsa new = liste; değilse sona kadar yürü, last->next = new.", edge:"Boş listeye (*lst == NULL) ekleme durumu.",
+ cov:"3 elemanlı listeye ekleme test edildi"},
+// ---- LINKED LIST FUNCTIONS #2 ----
+{name:"ft_lstsize", part:3, group:"Linked List Functions #2", sig:"(t_list *lst)",
+ src:"int\tft_lstsize(t_list *lst)\n{\n\tint\ti;\n\n\ti = 0;\n\twhile (lst)\n\t{\n\t\ti++;\n\t\tlst = lst->next;\n\t}\n\treturn (i);\n}",
+ hint:"while(lst) ile say, lst = lst->next.", edge:"Tek elemanlı liste ile dene.",
+ cov:"3 elemanlı liste ve boş liste (NULL) test edildi"},
+{name:"ft_lstlast", part:3, group:"Linked List Functions #2", sig:"(t_list *lst)",
+ src:"t_list\t*ft_lstlast(t_list *lst)\n{\n\tif (!lst)\n\t\treturn (NULL);\n\twhile (lst->next)\n\t\tlst = lst->next;\n\treturn (lst);\n}",
+ hint:"DİKKAT: while(lst->next), while(lst) DEĞİL.", edge:"Tek elemanlı liste ile dene (kendini dönmeli).",
+ cov:"3 elemanlı listenin son elemanı test edildi"},
+{name:"ft_lstiter", part:3, group:"Linked List Functions #2", sig:"(t_list *lst, void (*f)(void *))",
+ src:"void\tft_lstiter(t_list *lst, void (*f)(void *))\n{\n\tif (!lst || !f)\n\t\treturn ;\n\twhile (lst)\n\t{\n\t\tf(lst->content);\n\t\tlst = lst->next;\n\t}\n}",
+ hint:"Her düğümde f(lst->content) çağır, liste değişmez.", edge:"Boş liste (NULL) ile çağır, çökmemeli.",
+ cov:"içeriği yazdıran fonksiyonla görsel doğrulandı"},
+{name:"ft_lstmap", part:3, group:"Linked List Functions #2", sig:"(t_list *lst, void *(*f)(void *), void (*del)(void *))",
+ src:"t_list\t*ft_lstmap(t_list *lst, void *(*f)(void *), void (*del)(void *))\n{\n\tt_list\t*new_list;\n\tt_list\t*new_node;\n\tvoid\t*content;\n\n\tif (!lst || !f || !del)\n\t\treturn (NULL);\n\tnew_list = NULL;\n\twhile (lst)\n\t{\n\t\tcontent = f(lst->content);\n\t\tnew_node = ft_lstnew(content);\n\t\tif (!new_node)\n\t\t{\n\t\t\tdel(content);\n\t\t\tft_lstclear(&new_list, del);\n\t\t\treturn (NULL);\n\t\t}\n\t\tft_lstadd_back(&new_list, new_node);\n\t\tlst = lst->next;\n\t}\n\treturn (new_list);\n}",
+ hint:"f(content) -> lstnew -> lstadd_back; hata olursa lstclear ile temizle.", edge:"f fonksiyonu NULL dönerse ne olduğunu incele (lstnew başarısızlığı).",
+ cov:"her elemanı 2 ile çarpan fonksiyonla test edildi"},
+];
+
+const GROUP_ORDER = ["Libc Functions #1","Libc Functions #2","Libc Functions #3","Libc Functions #4",
+  "Additional Functions #1","Additional Functions #2","Linked List Functions #1","Linked List Functions #2"];
+
+const FN_BY_NAME = {};
+FUNCTIONS.forEach(f => FN_BY_NAME[f.name] = f);
+const PART1_FUNCS = FUNCTIONS.filter(f => f.part === 1);
+
+const PRELIM_ITEMS = [
+  {id:"norm", label:"Norminette: mandatory + bonus + libft.h tamamı \"OK\"", note:"Doğrulandı: 43/43 dosya temiz."},
+  {id:"compile", label:"-Wall -Wextra -Werror ile 0 hata / 0 uyarı derleniyor", note:"Doğrulandı."},
+  {id:"tests", label:"Kendi test suite'in eksiksiz çalışıyor (61/61)", note:"Doğrulandı."},
+  {id:"global", label:"Mandatory + bonus dosyalarında global değişken yok", note:"Doğrulandı: 0 global değişken."},
+  {id:"forbidden", label:"İzin verilmeyen libc fonksiyonu kullanılmıyor", note:"Doğrulandı: sadece malloc/free/write ve ft_ fonksiyonları."},
+  {id:"readme", label:"README.md tüm zorunlu bölümleri içeriyor (ilk satır dahil)", note:"Doğrulandı."},
+  {id:"valgrind", label:"valgrind --leak-check=full ile sızıntı yok", note:"Kendi terminalinde kontrol et (bu ortamda valgrind yok)."},
+  {id:"git", label:"git push yapıldı, temiz bir klasöre clone edilip derleniyor", note:"Kendi terminalinde kontrol et."},
+];
+
+/* ==================================================================
+   STORAGE
+   ================================================================== */
+const STORE_KEY = "libft_evo_trainer_v1";
+function loadStore(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    if (raw) return JSON.parse(raw);
+  }catch(e){}
+  return {progress:{}, checklist:{}, prelim:{}, flashConf:{}, mockHistory:[]};
+}
+function saveStore(){ localStorage.setItem(STORE_KEY, JSON.stringify(STATE)); }
+let STATE = loadStore();
+function ensureFn(name){
+  if (!STATE.progress[name]) STATE.progress[name] = {attempts:[], confidence:1};
+  return STATE.progress[name];
+}
+
+function toast(msg){
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=>t.classList.remove("show"), 2200);
+}
+
+/* ==================================================================
+   MINI C SYNTAX HIGHLIGHT
+   ================================================================== */
+function hlC(src){
+  const strings = [];
+  let s = src.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  s = s.replace(/'(?:[^'\\]|\\.)*'/g, function(m){ strings.push(m); return "@@STR" + (strings.length-1) + "@@"; });
+  s = s.replace(/"(?:[^"\\]|\\.)*"/g, function(m){ strings.push(m); return "@@STR" + (strings.length-1) + "@@"; });
+  const kw = ["if","else","while","return","static","struct","typedef","sizeof","break","continue","for","do"];
+  const types = ["int","char","void","size_t","long","unsigned","short","float","double","t_list","NULL"];
+  s = s.replace(/\b[A-Za-z_][A-Za-z0-9_]*\b/g, function(m){
+    if (kw.indexOf(m) !== -1) return '<span class="tok-kw">' + m + '</span>';
+    if (types.indexOf(m) !== -1) return '<span class="tok-type">' + m + '</span>';
+    return m;
+  });
+  s = s.replace(/@@STR(\d+)@@/g, function(_, i){ return '<span class="tok-str">' + strings[+i] + '</span>'; });
+  return s;
+}
+
+/* ==================================================================
+   NAVIGASYON
+   ================================================================== */
+const NAV_ITEMS = [
+  {id:"ozet", ico:"&#9673;", label:"Özet"},
+  {id:"canli", ico:"&#9210;", label:"Canlı Kodlama"},
+  {id:"kart", ico:"&#9636;", label:"Hatırlatma Kartları"},
+  {id:"checklist", ico:"&#10003;", label:"Checklist"},
+  {id:"mock", ico:"&#9733;", label:"Mock Evaluation"},
+  {id:"bilgi", ico:"&#9432;", label:"Bilgi Rehberi"},
+];
+let ACTIVE_TAB = "ozet";
+
+function renderNav(){
+  const nav = document.getElementById("nav");
+  nav.innerHTML = NAV_ITEMS.map(function(it){
+    return '<button class="navbtn ' + (it.id===ACTIVE_TAB?'active':'') + '" data-tab="' + it.id + '">' +
+      '<span class="ico">' + it.ico + '</span>' + it.label + '</button>';
+  }).join("");
+  nav.querySelectorAll(".navbtn").forEach(function(btn){
+    btn.addEventListener("click", function(){ switchTab(btn.dataset.tab); });
+  });
+}
+
+function switchTab(tab){
+  ACTIVE_TAB = tab;
+  document.querySelectorAll(".tab-panel").forEach(function(p){ p.classList.remove("active"); });
+  document.getElementById("tab-"+tab).classList.add("active");
+  renderNav();
+  renderSidebarStats();
+  if (tab==="ozet") renderOzet();
+  if (tab==="canli") renderCanli();
+  if (tab==="kart") renderKart();
+  if (tab==="checklist") renderChecklist();
+  if (tab==="mock") renderMock();
+  if (tab==="bilgi") renderBilgi();
+}
+
+function renderSidebarStats(){
+  const total = FUNCTIONS.length;
+  let attempted = 0, okCount = 0, totalAttempts = 0;
+  Object.keys(STATE.progress).forEach(function(name){
+    const p = STATE.progress[name];
+    if (p.attempts.length){ attempted++; totalAttempts += p.attempts.length; }
+    const last = p.attempts[p.attempts.length-1];
+    if (last && last.result === "ok") okCount++;
+  });
+  const checklistDone = Object.values(STATE.checklist).filter(Boolean).length;
+  document.getElementById("sidebarStats").innerHTML =
+    '<div class="row"><span>Denenen fonksiyon</span><b>' + attempted + '/' + total + '</b></div>' +
+    '<div class="row"><span>Toplam deneme</span><b>' + totalAttempts + '</b></div>' +
+    '<div class="row"><span>Checklist</span><b>' + checklistDone + '/' + total + '</b></div>' +
+    '<div class="row"><span>Mock evaluation</span><b>' + STATE.mockHistory.length + '</b></div>';
+}
+
+/* ==================================================================
+   OZET (DASHBOARD)
+   ================================================================== */
+function weakestFunctions(n){
+  const scored = FUNCTIONS.map(function(f){
+    const p = STATE.progress[f.name];
+    let score = 0;
+    if (p && p.attempts.length){
+      const recent = p.attempts.slice(-3);
+      recent.forEach(function(a){
+        if (a.result === "bad") score += 2;
+        else if (a.result === "partial") score += 1;
+      });
+      score += (3 - Math.min(3, p.attempts.length)) * 0.3;
+    } else {
+      score = 1.5;
+    }
+    return {f: f, score: score, attempts: p ? p.attempts.length : 0};
+  });
+  scored.sort(function(a,b){ return b.score - a.score; });
+  return scored.slice(0, n);
+}
+
+function renderOzet(){
+  const total = FUNCTIONS.length;
+  let attempted = 0, totalAttempts = 0, okLast = 0;
+  Object.keys(STATE.progress).forEach(function(name){
+    const p = STATE.progress[name];
+    if (p.attempts.length){ attempted++; totalAttempts += p.attempts.length; }
+    const last = p.attempts[p.attempts.length-1];
+    if (last && last.result === "ok") okLast++;
+  });
+  const checklistDone = Object.values(STATE.checklist).filter(Boolean).length;
+  const prelimDone = PRELIM_ITEMS.filter(function(it){ return STATE.prelim[it.id]; }).length;
+  const weak = weakestFunctions(5);
+
+  const el = document.getElementById("tab-ozet");
+  el.innerHTML = `
+    <h1 class="page-title">Özet</h1>
+    <div class="page-sub">Libft evaluation'ına ne kadar hazır olduğunun anlık görünümü.</div>
+
+    <div class="cards">
+      <div class="stat-card accent"><div class="num">${attempted}/${total}</div><div class="lbl">Denenen fonksiyon</div></div>
+      <div class="stat-card good"><div class="num">${okLast}</div><div class="lbl">Son denemede "tam doğru"</div></div>
+      <div class="stat-card warn"><div class="num">${checklistDone}/${total}</div><div class="lbl">Checklist tamamlanan</div></div>
+      <div class="stat-card ${prelimDone===PRELIM_ITEMS.length?'good':'danger'}"><div class="num">${prelimDone}/${PRELIM_ITEMS.length}</div><div class="lbl">Preliminaries kontrolü</div></div>
+    </div>
+
+    <div class="panel">
+      <h2>Hızlı Başlat</h2>
+      <div class="btnrow">
+        <button class="btn big" id="qsLive">Rastgele Canlı Kodlama Başlat</button>
+        <button class="btn big secondary" id="qsChecklist">Checklist'i Aç</button>
+        <button class="btn big secondary" id="qsMock">Mock Evaluation Başlat</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>En Çok Pratik İstediğin 5 Fonksiyon</h2>
+      <p class="page-sub" style="margin-bottom:10px;">Yanlış/kısmi işaretlenen ya da hiç denenmemiş fonksiyonlara göre sıralandı -- canlı kodlama antrenmanı da bu ağırlığı kullanıyor.</p>
+      <table class="info-table">
+        <tr><th>Fonksiyon</th><th>Grup</th><th>Deneme sayısı</th><th></th></tr>
+        ${weak.map(function(w){
+          return `<tr><td style="font-family:Consolas,monospace;font-weight:700;">${w.f.name}</td><td>${w.f.group}</td><td>${w.attempts}</td>
+          <td><button class="btn secondary" data-practice="${w.f.name}" style="padding:5px 10px;font-size:10.5px;">Şimdi pratik yap</button></td></tr>`;
+        }).join("")}
+      </table>
+    </div>
+
+    <div class="panel">
+      <h2>Evaluation Akışı (hatırlatma)</h2>
+      <table class="info-table">
+        <tr><th>#</th><th>Aşama</th><th>Özet</th></tr>
+        <tr><td>1</td><td>Preliminaries</td><td>Değerlendirici seninle oturur; hile şüphesinde "Cheat" flag'i kullanılır.</td></tr>
+        <tr><td>2</td><td>Preliminary tests</td><td>Empty Work / Norme error / global değişken kontrolleri -- biri başarısız olursa not otomatik 0.</td></tr>
+        <tr><td>3</td><td>Mandatory part</td><td>README + 8 fonksiyon grubu tek tek test edilir.</td></tr>
+        <tr><td>4</td><td>Live coding verification</td><td>Part 1'den rastgele bir fonksiyon canlı, sıfırdan yazılır.</td></tr>
+        <tr><td>5</td><td>Ratings</td><td>Ok / Outstanding, ya da Leaks / Crash / Forbidden function gibi flag'ler.</td></tr>
+        <tr><td>6</td><td>Conclusion</td><td>Genel kapanış.</td></tr>
+      </table>
+    </div>
+  `;
+  document.getElementById("qsLive").addEventListener("click", function(){ switchTab("canli"); startLiveRound(null); });
+  document.getElementById("qsChecklist").addEventListener("click", function(){ switchTab("checklist"); });
+  document.getElementById("qsMock").addEventListener("click", function(){ switchTab("mock"); });
+  el.querySelectorAll("[data-practice]").forEach(function(btn){
+    btn.addEventListener("click", function(){ switchTab("canli"); startLiveRound(btn.dataset.practice); });
+  });
+}
+
+/* ==================================================================
+   CANLI KODLAMA ANTRENMANI
+   ================================================================== */
+let LIVE = {fn:null, timerId:null, remaining:0, running:false, revealed:false};
+
+function pickWeightedFunction(pool){
+  const scored = pool.map(function(f){
+    const p = STATE.progress[f.name];
+    let score = 2;
+    if (p && p.attempts.length){
+      const recent = p.attempts.slice(-3);
+      recent.forEach(function(a){
+        if (a.result === "bad") score += 3;
+        else if (a.result === "partial") score += 1.5;
+        else score -= 0.5;
+      });
+    } else {
+      score += 2;
+    }
+    if (score < 0.2) score = 0.2;
+    return {f:f, score:score};
+  });
+  const totalScore = scored.reduce(function(s,x){ return s + x.score; }, 0);
+  let r = Math.random() * totalScore;
+  for (let i=0; i<scored.length; i++){
+    r -= scored[i].score;
+    if (r <= 0) return scored[i].f;
+  }
+  return scored[scored.length-1].f;
+}
+
+function renderCanli(){
+  const el = document.getElementById("tab-canli");
+  el.innerHTML = `
+    <h1 class="page-title">Canlı Kodlama Antrenmanı</h1>
+    <div class="page-sub">Gerçek evoda olduğu gibi: fonksiyon adı + imza verilir, sen sıfırdan yazarsın, sonra karşılaştırırsın.</div>
+    <div class="panel" id="liveSetupPanel"></div>
+    <div class="panel" id="liveRoundPanel" style="display:none;"></div>
+  `;
+  renderLiveSetup();
+}
+
+function renderLiveSetup(){
+  const p = document.getElementById("liveSetupPanel");
+  p.style.display = "block";
+  document.getElementById("liveRoundPanel").style.display = "none";
+  p.innerHTML = `
+    <h2>Yeni Tur Başlat</h2>
+    <div class="live-setup">
+      <div>
+        <label class="field-lbl">Havuz</label>
+        <select id="liveScope">
+          <option value="part1">Part 1 -- gerçek evo formatı (23 fonksiyon)</option>
+          <option value="all">Tüm kütüphane (43 fonksiyon) -- ekstra pratik</option>
+          <option value="pick">Belirli bir fonksiyon seç</option>
+        </select>
+      </div>
+      <div id="pickWrap" style="display:none;">
+        <label class="field-lbl">Fonksiyon</label>
+        <select id="livePick">${FUNCTIONS.map(function(f){ return '<option value="'+f.name+'">'+f.name+' ('+f.group+')</option>'; }).join("")}</select>
+      </div>
+      <div>
+        <label class="field-lbl">Süre</label>
+        <select id="liveDuration">
+          <option value="180">3 dakika</option>
+          <option value="300" selected>5 dakika</option>
+          <option value="600">10 dakika</option>
+          <option value="0">Süresiz</option>
+        </select>
+      </div>
+      <button class="btn big" id="liveStartBtn">Başlat</button>
+    </div>
+    <div class="hint-box"><b>Nasıl çalışır:</b> Başlat'a basınca sadece fonksiyon adını ve imzasını göreceksin -- kaynak kod, hint, her şey gizli. Süre bitince ya da "Bitti" dediğinde referans koduna göre kendini değerlendiriyorsun.</div>
+  `;
+  document.getElementById("liveScope").addEventListener("change", function(e){
+    document.getElementById("pickWrap").style.display = e.target.value === "pick" ? "block" : "none";
+  });
+  document.getElementById("liveStartBtn").addEventListener("click", function(){
+    const scope = document.getElementById("liveScope").value;
+    const duration = parseInt(document.getElementById("liveDuration").value, 10);
+    let name = null;
+    if (scope === "pick") name = document.getElementById("livePick").value;
+    startLiveRound(name, scope, duration);
+  });
+}
+
+function startLiveRound(forcedName, scope, duration){
+  scope = scope || "part1";
+  if (duration === undefined) duration = 300;
+  let fn;
+  if (forcedName){
+    fn = FN_BY_NAME[forcedName];
+  } else {
+    const pool = scope === "all" ? FUNCTIONS : PART1_FUNCS;
+    fn = pickWeightedFunction(pool);
+  }
+  LIVE = {fn:fn, timerId:null, remaining:duration, duration:duration, running:duration>0, revealed:false, startTs:Date.now()};
+  document.getElementById("liveSetupPanel").style.display = "none";
+  const panel = document.getElementById("liveRoundPanel");
+  panel.style.display = "block";
+  renderLiveRound();
+  if (duration > 0) startLiveTimer();
+}
+
+function fmtTime(sec){
+  const m = Math.floor(sec/60), s = sec%60;
+  return (m<10?"0":"")+m+":"+(s<10?"0":"")+s;
+}
+
+function startLiveTimer(){
+  clearInterval(LIVE.timerId);
+  LIVE.timerId = setInterval(function(){
+    LIVE.remaining--;
+    const tEl = document.getElementById("liveTimer");
+    if (tEl){
+      tEl.textContent = fmtTime(Math.max(0,LIVE.remaining));
+      tEl.classList.toggle("low", LIVE.remaining <= 30);
+    }
+    if (LIVE.remaining <= 0){
+      clearInterval(LIVE.timerId);
+      toast("Süre doldu -- şimdi kontrol et.");
+      revealLive();
+    }
+  }, 1000);
+}
+
+function renderLiveRound(){
+  const panel = document.getElementById("liveRoundPanel");
+  const fn = LIVE.fn;
+  panel.innerHTML = `
+    <div class="live-header">
+      <div>
+        <h2 style="margin-bottom:2px;">${fn.group}</h2>
+        <div class="fn-target">${fn.name}${fn.sig}</div>
+      </div>
+      <div style="text-align:right;">
+        ${LIVE.duration>0 ? '<div class="timer" id="liveTimer">'+fmtTime(LIVE.remaining)+'</div><div class="page-sub">kalan süre</div>' : '<div class="page-sub">süresiz mod</div>'}
+      </div>
+    </div>
+    <label class="field-lbl" style="margin-top:14px;">Kodunu buraya yaz (Tab tuşu çalışır):</label>
+    <textarea class="codein" id="liveInput" spellcheck="false" placeholder="${fn.name}${fn.sig}\n{\n\t...\n}"></textarea>
+    <div class="btnrow">
+      <button class="btn good big" id="liveCheckBtn">Bitti / Kontrol Et</button>
+      <button class="btn secondary" id="liveSkipBtn">Vazgeç, yeni tur</button>
+    </div>
+    <div id="liveReveal"></div>
+  `;
+  const ta = document.getElementById("liveInput");
+  ta.addEventListener("keydown", function(e){
+    if (e.key === "Tab"){
+      e.preventDefault();
+      const start = ta.selectionStart, end = ta.selectionEnd;
+      ta.value = ta.value.substring(0,start) + "\t" + ta.value.substring(end);
+      ta.selectionStart = ta.selectionEnd = start+1;
+    }
+  });
+  ta.focus();
+  document.getElementById("liveCheckBtn").addEventListener("click", revealLive);
+  document.getElementById("liveSkipBtn").addEventListener("click", function(){
+    clearInterval(LIVE.timerId);
+    renderLiveSetup();
+  });
+}
+
+function revealLive(){
+  if (LIVE.revealed) return;
+  LIVE.revealed = true;
+  clearInterval(LIVE.timerId);
+  document.getElementById("liveCheckBtn").disabled = true;
+  const fn = LIVE.fn;
+  const box = document.getElementById("liveReveal");
+  box.innerHTML = `
+    <h3>Referans Çözüm</h3>
+    <div class="codebox">${hlC(fn.src)}</div>
+    <div class="hint-box"><b>Mantık ipucu:</b> ${fn.hint}</div>
+    <div class="edge-box"><b>Ek uç durum:</b> ${fn.edge}</div>
+    <h3>Kendini Değerlendir</h3>
+    <div class="rate-row">
+      <button class="rate-btn ok" data-r="ok">Tam doğru</button>
+      <button class="rate-btn partial" data-r="partial">Küçük hatalar</button>
+      <button class="rate-btn bad" data-r="bad">Baştan yazamadım</button>
+    </div>
+  `;
+  box.querySelectorAll(".rate-btn").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      const p = ensureFn(fn.name);
+      p.attempts.push({ts:Date.now(), result:btn.dataset.r, durationUsed: LIVE.duration>0 ? (LIVE.duration-LIVE.remaining) : null});
+      saveStore();
+      toast(fn.name + " kaydedildi.");
+      renderSidebarStats();
+      const cont = document.createElement("div");
+      cont.className = "btnrow";
+      cont.innerHTML = '<button class="btn big" id="liveNextBtn">Yeni Tur</button>';
+      box.appendChild(cont);
+      document.getElementById("liveNextBtn").addEventListener("click", renderLiveSetup);
+      box.querySelectorAll(".rate-btn").forEach(function(b){ b.disabled = true; b.style.opacity=.5; });
+    });
+  });
+}
+
+/* ==================================================================
+   HATIRLATMA KARTLARI (FLASHCARDS)
+   ================================================================== */
+const FLASH_FILTERS = [
+  {id:"all", label:"Hepsi (43)"},
+  {id:"1", label:"Part 1 (23)"},
+  {id:"2", label:"Part 2 (11)"},
+  {id:"3", label:"Bonus (9)"},
+];
+let FLASH = {filter:"all", order:[], idx:0, flipped:false};
+
+function shuffleArr(arr){
+  const a = arr.slice();
+  for (let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    const tmp=a[i]; a[i]=a[j]; a[j]=tmp;
+  }
+  return a;
+}
+
+function flashPool(){
+  if (FLASH.filter === "all") return FUNCTIONS;
+  return FUNCTIONS.filter(function(f){ return String(f.part) === FLASH.filter; });
+}
+
+function renderKart(){
+  if (!FLASH.order.length) FLASH.order = shuffleArr(FUNCTIONS.map(function(f,i){ return i; }));
+  const el = document.getElementById("tab-kart");
+  el.innerHTML = `
+    <h1 class="page-title">Hatırlatma Kartları</h1>
+    <div class="page-sub">Karta tıkla / boşluk tuşuna bas -- çevrilir. Amaç ezber değil, "evet biliyorum" diyebilmek.</div>
+    <div class="flash-filter" id="flashFilters"></div>
+    <div class="flash-wrap">
+      <div class="flashcard" id="flashCard"></div>
+      <div class="flash-nav">
+        <button class="btn secondary" id="flashPrev">&larr; Önceki</button>
+        <span class="flash-progress" id="flashProgress"></span>
+        <button class="btn secondary" id="flashNext">Sonraki &rarr;</button>
+        <button class="btn secondary" id="flashShuffle">Karıştır</button>
+      </div>
+      <div class="rate-row" id="flashRate" style="max-width:560px; width:100%;"></div>
+    </div>
+  `;
+  const fw = document.getElementById("flashFilters");
+  fw.innerHTML = FLASH_FILTERS.map(function(f){
+    return '<button class="chip '+(FLASH.filter===f.id?'active':'')+'" data-f="'+f.id+'">'+f.label+'</button>';
+  }).join("");
+  fw.querySelectorAll(".chip").forEach(function(c){
+    c.addEventListener("click", function(){
+      FLASH.filter = c.dataset.f; FLASH.idx = 0; FLASH.flipped=false;
+      FLASH.order = shuffleArr(flashPool().map(function(f,i){ return i; }));
+      renderKart();
+    });
+  });
+  document.getElementById("flashPrev").addEventListener("click", function(){ flashMove(-1); });
+  document.getElementById("flashNext").addEventListener("click", function(){ flashMove(1); });
+  document.getElementById("flashShuffle").addEventListener("click", function(){
+    FLASH.order = shuffleArr(flashPool().map(function(f,i){ return i; }));
+    FLASH.idx = 0; FLASH.flipped = false;
+    renderFlashCard();
+  });
+  renderFlashCard();
+  document.onkeydown = function(e){
+    if (ACTIVE_TAB !== "kart") return;
+    if (e.code === "Space"){ e.preventDefault(); flipFlashCard(); }
+    if (e.code === "ArrowRight") flashMove(1);
+    if (e.code === "ArrowLeft") flashMove(-1);
+  };
+}
+
+function currentFlashFn(){
+  const pool = flashPool();
+  if (!pool.length) return null;
+  const i = FLASH.order[FLASH.idx % FLASH.order.length];
+  return pool[i] || pool[0];
+}
+
+function renderFlashCard(){
+  const pool = flashPool();
+  const card = document.getElementById("flashCard");
+  const fn = currentFlashFn();
+  if (!fn){ card.innerHTML = "Bu filtrede fonksiyon yok."; return; }
+  document.getElementById("flashProgress").textContent = (FLASH.idx%pool.length+1) + " / " + pool.length;
+  if (!FLASH.flipped){
+    card.innerHTML = `
+      <div class="fc-label">${fn.group}</div>
+      <div class="fc-name">${fn.name}</div>
+      <div class="fc-sig">${fn.sig}</div>
+      <div class="fc-hint" style="margin-top:22px; color:#8ea3ba;">(çevirmek için tıkla ya da boşluk tuşu)</div>
+    `;
+  } else {
+    card.innerHTML = `
+      <div class="fc-label">Mantık</div>
+      <div class="fc-hint">${fn.hint}</div>
+      <div class="fc-edge"><b>Uç durum:</b> ${fn.edge}</div>
+    `;
+  }
+  card.onclick = flipFlashCard;
+  const rateWrap = document.getElementById("flashRate");
+  if (FLASH.flipped){
+    rateWrap.innerHTML = `
+      <button class="rate-btn ok" data-c="2">Biliyorum</button>
+      <button class="rate-btn partial" data-c="1">Emin değilim</button>
+      <button class="rate-btn bad" data-c="0">Tekrar bakmalıyım</button>
+    `;
+    rateWrap.querySelectorAll(".rate-btn").forEach(function(b){
+      b.addEventListener("click", function(e){
+        e.stopPropagation();
+        STATE.flashConf[fn.name] = parseInt(b.dataset.c,10);
+        saveStore();
+        flashMove(1);
+      });
+    });
+  } else {
+    rateWrap.innerHTML = "";
+  }
+}
+
+function flipFlashCard(){ FLASH.flipped = !FLASH.flipped; renderFlashCard(); }
+function flashMove(dir){
+  const pool = flashPool();
+  if (!pool.length) return;
+  FLASH.idx = (FLASH.idx + dir + FLASH.order.length) % FLASH.order.length;
+  FLASH.flipped = false;
+  renderFlashCard();
+}
+
+/* ==================================================================
+   CHECKLIST (evaluation sheet ile birebir)
+   ================================================================== */
+function renderChecklist(){
+  const el = document.getElementById("tab-checklist");
+  const totalDone = Object.values(STATE.checklist).filter(Boolean).length;
+  const prelimDone = PRELIM_ITEMS.filter(function(it){ return STATE.prelim[it.id]; }).length;
+
+  let html = `
+    <h1 class="page-title">Checklist</h1>
+    <div class="page-sub">Evaluation sheet'iyle birebir aynı sıra. İşaretlemeler tarayıcında saklanır.</div>
+
+    <div class="panel">
+      <h2>Preliminaries (Empty Work / Norme Error kontrolü)</h2>
+      <div class="progress-bar-outer"><div class="progress-bar-inner" style="width:${(prelimDone/PRELIM_ITEMS.length*100)}%"></div></div>
+      <div class="group-body">
+        ${PRELIM_ITEMS.map(function(it){
+          const done = !!STATE.prelim[it.id];
+          return `<div class="check-row ${done?'done':''}">
+            <input type="checkbox" data-prelim="${it.id}" ${done?'checked':''}>
+            <div style="flex:1;"><div>${it.label}</div><div class="fcov" style="font-size:10.5px;">${it.note}</div></div>
+          </div>`;
+        }).join("")}
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Mandatory Part: Fonksiyon Grupları</h2>
+      <div class="progress-bar-outer"><div class="progress-bar-inner" style="width:${(totalDone/FUNCTIONS.length*100)}%"></div></div>
+      <div class="page-sub" style="margin-bottom:14px;">${totalDone} / ${FUNCTIONS.length} fonksiyon işaretlendi</div>
+      ${GROUP_ORDER.map(function(g){
+        const fns = FUNCTIONS.filter(function(f){ return f.group === g; });
+        const done = fns.filter(function(f){ return STATE.checklist[f.name]; }).length;
+        return `<div class="group-block">
+          <div class="group-title"><span>${g.toUpperCase()}</span><span>${done}/${fns.length}</span></div>
+          <div class="group-body">
+            ${fns.map(function(f){
+              const isDone = !!STATE.checklist[f.name];
+              return `<div class="check-row ${isDone?'done':''}">
+                <input type="checkbox" data-fn="${f.name}" ${isDone?'checked':''}>
+                <div class="fname">${f.name}</div>
+                <div class="fcov">${f.cov}</div>
+              </div>`;
+            }).join("")}
+          </div>
+        </div>`;
+      }).join("")}
+    </div>
+  `;
+  el.innerHTML = html;
+  el.querySelectorAll("[data-prelim]").forEach(function(cb){
+    cb.addEventListener("change", function(){
+      STATE.prelim[cb.dataset.prelim] = cb.checked;
+      saveStore();
+      renderChecklist();
+      renderSidebarStats();
+    });
+  });
+  el.querySelectorAll("[data-fn]").forEach(function(cb){
+    cb.addEventListener("change", function(){
+      STATE.checklist[cb.dataset.fn] = cb.checked;
+      saveStore();
+      renderChecklist();
+      renderSidebarStats();
+    });
+  });
+}
+
+/* ==================================================================
+   MOCK EVALUATION (uctan uca simulasyon)
+   ================================================================== */
+let MOCK = {step:0, prelim:{}, groups:{}, live:null, liveFn:null, timerId:null, remaining:300};
+
+function resetMock(){
+  MOCK = {step:0, prelim:{}, groups:{}, live:null, liveFn:null, timerId:null, remaining:300};
+  PRELIM_ITEMS.forEach(function(it){ MOCK.prelim[it.id] = !!STATE.prelim[it.id]; });
+  GROUP_ORDER.forEach(function(g){ MOCK.groups[g] = true; });
+}
+resetMock();
+
+const MOCK_STEPS = ["Giriş","Preliminaries","Fonksiyon Grupları","Canlı Kodlama","Sonuç Karnesi"];
+
+function renderMock(){
+  const el = document.getElementById("tab-mock");
+  el.innerHTML = `
+    <h1 class="page-title">Mock Evaluation</h1>
+    <div class="page-sub">Gerçek evoyu baştan sona simüle eder: preliminaries -> gruplar -> canlı kodlama -> karne.</div>
+    <div class="mock-progress-dots" id="mockDots"></div>
+    <div class="panel" id="mockPanel"></div>
+  `;
+  renderMockDots();
+  renderMockStep();
+}
+
+function renderMockDots(){
+  const dots = document.getElementById("mockDots");
+  if (!dots) return;
+  dots.innerHTML = MOCK_STEPS.map(function(_,i){
+    let cls = "dot";
+    if (i < MOCK.step) cls += " done";
+    else if (i === MOCK.step) cls += " current";
+    return '<div class="'+cls+'" title="'+MOCK_STEPS[i]+'"></div>';
+  }).join("");
+}
+
+function renderMockStep(){
+  renderMockDots();
+  const panel = document.getElementById("mockPanel");
+  if (MOCK.step === 0) return mockStepIntro(panel);
+  if (MOCK.step === 1) return mockStepPrelim(panel);
+  if (MOCK.step === 2) return mockStepGroups(panel);
+  if (MOCK.step === 3) return mockStepLive(panel);
+  if (MOCK.step === 4) return mockStepReport(panel);
+}
+
+function mockStepIntro(panel){
+  panel.innerHTML = `
+    <h2>Simülasyona Hazır mısın?</h2>
+    <p>Bu mod gerçek evoyu taklit ediyor: önce ön koşulları teyit edeceksin, sonra 8 fonksiyon grubunu hızlıca gözden geçireceksin,
+    sonra rastgele seçilen bir Part 1 fonksiyonunu <b>gerçekten canlı olarak</b> (zamanlayıcılı) yazacaksın, en sonda sana bir
+    sonuç karnesi ve risk uyarıları göstereceğim. Yaklaşık 8-10 dakika sürer.</p>
+    <button class="btn big" id="mockStartBtn">Simülasyonu Başlat</button>
+  `;
+  document.getElementById("mockStartBtn").addEventListener("click", function(){
+    resetMock(); MOCK.step = 1; renderMockStep();
+  });
+}
+
+function mockStepPrelim(panel){
+  panel.innerHTML = `
+    <h2>1/3 &middot; Preliminaries</h2>
+    <p class="page-sub">Bunlardan biri "Hayır" ise gerçek evoda not otomatik 0 olabilir. Dürüstçe işaretle.</p>
+    ${PRELIM_ITEMS.map(function(it){
+      const val = MOCK.prelim[it.id];
+      return `<div class="check-row">
+        <div style="flex:1;">${it.label}</div>
+        <button class="chip ${val?'active':''}" data-yn="${it.id}" data-v="1">Evet</button>
+        <button class="chip ${!val?'active':''}" data-yn="${it.id}" data-v="0">Hayır</button>
+      </div>`;
+    }).join("")}
+    <div class="btnrow"><button class="btn big" id="mockPrelimNext">Devam Et</button></div>
+  `;
+  panel.querySelectorAll("[data-yn]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      MOCK.prelim[btn.dataset.yn] = btn.dataset.v === "1";
+      mockStepPrelim(panel);
+    });
+  });
+  document.getElementById("mockPrelimNext").addEventListener("click", function(){ MOCK.step=2; renderMockStep(); });
+}
+
+function mockStepGroups(panel){
+  panel.innerHTML = `
+    <h2>2/3 &middot; Fonksiyon Grupları</h2>
+    <p class="page-sub">Her grup için "hazırım" ya da "şüpheliyim" işaretle -- şüpheliysen o grubu Checklist sekmesinde tekrar gözden geçir.</p>
+    ${GROUP_ORDER.map(function(g){
+      const fns = FUNCTIONS.filter(function(f){ return f.group===g; });
+      const val = MOCK.groups[g];
+      return `<div class="check-row">
+        <div style="flex:1;"><b>${g}</b> <span class="fcov">(${fns.length} fonksiyon)</span></div>
+        <button class="chip ${val?'active':''}" data-g="${g}" data-v="1">Hazırım</button>
+        <button class="chip ${!val?'active':''}" data-g="${g}" data-v="0">Şüpheliyim</button>
+      </div>`;
+    }).join("")}
+    <div class="btnrow"><button class="btn big" id="mockGroupsNext">Canlı Kodlamaya Geç</button></div>
+  `;
+  panel.querySelectorAll("[data-g]").forEach(function(btn){
+    btn.addEventListener("click", function(){
+      MOCK.groups[btn.dataset.g] = btn.dataset.v === "1";
+      mockStepGroups(panel);
+    });
+  });
+  document.getElementById("mockGroupsNext").addEventListener("click", function(){ MOCK.step=3; renderMockStep(); });
+}
+
+function mockStepLive(panel){
+  if (!MOCK.liveFn) MOCK.liveFn = pickWeightedFunction(PART1_FUNCS);
+  const fn = MOCK.liveFn;
+  if (MOCK.live){
+    panel.innerHTML = `
+      <h2>3/3 &middot; Canlı Kodlama</h2>
+      <div class="fn-target">${fn.name}${fn.sig}</div>
+      <div class="codebox">${hlC(fn.src)}</div>
+      <div class="hint-box"><b>Mantık ipucu:</b> ${fn.hint}</div>
+      <h3>Kendini Değerlendir</h3>
+      <div class="rate-row">
+        <button class="rate-btn ok" data-r="ok">Tam doğru</button>
+        <button class="rate-btn partial" data-r="partial">Küçük hatalar</button>
+        <button class="rate-btn bad" data-r="bad">Baştan yazamadım</button>
+      </div>
+    `;
+    panel.querySelectorAll(".rate-btn").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        MOCK.live = btn.dataset.r;
+        const p = ensureFn(fn.name);
+        p.attempts.push({ts:Date.now(), result:btn.dataset.r, durationUsed:null, mock:true});
+        saveStore();
+        MOCK.step = 4; renderMockStep();
+      });
+    });
+    return;
+  }
+  panel.innerHTML = `
+    <h2>3/3 &middot; Canlı Kodlama</h2>
+    <p class="page-sub">Değerlendirici Part 1'den şu fonksiyonu seçti:</p>
+    <div class="fn-target">${fn.name}${fn.sig}</div>
+    <div class="timer" id="mockTimer">${fmtTime(MOCK.remaining)}</div>
+    <textarea class="codein" id="mockInput" spellcheck="false" placeholder="${fn.name}${fn.sig}\n{\n\t...\n}"></textarea>
+    <div class="btnrow"><button class="btn good big" id="mockCheckBtn">Bitti / Kontrol Et</button></div>
+  `;
+  const ta = document.getElementById("mockInput");
+  ta.addEventListener("keydown", function(e){
+    if (e.key === "Tab"){
+      e.preventDefault();
+      const start = ta.selectionStart, end = ta.selectionEnd;
+      ta.value = ta.value.substring(0,start) + "\t" + ta.value.substring(end);
+      ta.selectionStart = ta.selectionEnd = start+1;
+    }
+  });
+  ta.focus();
+  clearInterval(MOCK.timerId);
+  MOCK.timerId = setInterval(function(){
+    MOCK.remaining--;
+    const tEl = document.getElementById("mockTimer");
+    if (tEl){ tEl.textContent = fmtTime(Math.max(0,MOCK.remaining)); tEl.classList.toggle("low", MOCK.remaining<=30); }
+    if (MOCK.remaining <= 0){ clearInterval(MOCK.timerId); MOCK.live="pending"; mockStepLive(panel); }
+  }, 1000);
+  document.getElementById("mockCheckBtn").addEventListener("click", function(){
+    clearInterval(MOCK.timerId);
+    MOCK.live = "pending";
+    mockStepLive(panel);
+  });
+}
+
+function mockStepReport(panel){
+  const prelimTotal = PRELIM_ITEMS.length;
+  const prelimYes = PRELIM_ITEMS.filter(function(it){ return MOCK.prelim[it.id]; }).length;
+  const prelimFails = PRELIM_ITEMS.filter(function(it){ return !MOCK.prelim[it.id]; });
+  const groupTotal = GROUP_ORDER.length;
+  const groupYes = GROUP_ORDER.filter(function(g){ return MOCK.groups[g]; }).length;
+  const groupFails = GROUP_ORDER.filter(function(g){ return !MOCK.groups[g]; });
+  const liveScoreMap = {ok:100, partial:55, bad:15};
+  const liveScore = liveScoreMap[MOCK.live] || 0;
+
+  const prelimScore = (prelimYes/prelimTotal)*100;
+  const groupScore = (groupYes/groupTotal)*100;
+  const overall = Math.round(prelimScore*0.30 + groupScore*0.30 + liveScore*0.40);
+
+  let verdict, verdictColor;
+  if (prelimFails.length){ verdict = "Preliminary test riski -- önce bunları çöz"; }
+  else if (overall >= 85){ verdict = "Outstanding project seviyesi"; }
+  else if (overall >= 65){ verdict = "Ok -- geçer durumdasın"; }
+  else { verdict = "Daha fazla pratiğe ihtiyacın var"; }
+
+  const flags = [];
+  if (prelimFails.length) flags.push({name:"Empty Work / Norme Error / Leaks riski", risk:true});
+  else flags.push({name:"Preliminaries temiz", risk:false});
+  if (groupFails.length) flags.push({name:"Incomplete Work riski ("+groupFails.length+" grup şüpheli)", risk:true});
+  else flags.push({name:"Tüm gruplar hazır", risk:false});
+  if (MOCK.live === "bad") flags.push({name:"Can't Support / Explain Code riski", risk:true});
+  else if (MOCK.live === "partial") flags.push({name:"Concerning Situation riski", risk:true});
+  else flags.push({name:"Canlı kodlama başarılı", risk:false});
+
+  STATE.mockHistory.push({ts:Date.now(), score:overall, live:MOCK.live});
+  saveStore();
+  renderSidebarStats();
+
+  panel.innerHTML = `
+    <div class="report-card">
+      <h2>Sonuç Karnesi</h2>
+      <div class="report-score">${overall}/100</div>
+      <div style="margin:8px 0 18px 0; color:#e6f4f7;">${verdict}</div>
+      <div class="report-row"><span>Preliminaries</span><span>${prelimYes}/${prelimTotal}</span></div>
+      <div class="report-row"><span>Fonksiyon grupları</span><span>${groupYes}/${groupTotal}</span></div>
+      <div class="report-row"><span>Canlı kodlama (${MOCK.liveFn.name})</span><span>${({ok:"Tam doğru",partial:"Küçük hatalar",bad:"Baştan yazamadım"})[MOCK.live] || "-"}</span></div>
+      <div style="margin-top:16px;">
+        ${flags.map(function(f){ return '<span class="flag-pill '+(f.risk?'risk':'ok')+'">'+f.name+'</span>'; }).join("")}
+      </div>
+    </div>
+    <div class="btnrow" style="margin-top:16px;">
+      <button class="btn big" id="mockAgainBtn">Yeni Simülasyon</button>
+      <button class="btn secondary" id="mockChecklistBtn">Checklist'e Git</button>
+    </div>
+  `;
+  document.getElementById("mockAgainBtn").addEventListener("click", function(){ resetMock(); renderMock(); });
+  document.getElementById("mockChecklistBtn").addEventListener("click", function(){ switchTab("checklist"); });
+}
+
+/* ==================================================================
+   BILGI REHBERI
+   ================================================================== */
+const FLAG_INFO = [
+  {name:"Ok", kind:"good", desc:"Standart geçer not. Mandatory kısmın beklendiği gibi çalıştığı anlamına gelir."},
+  {name:"Outstanding project", kind:"good", desc:"Beklenenin üzerinde bir iş -- temiz kod, iyi test kapsamı, akıcı açıklama."},
+  {name:"Empty Work", kind:"bad", desc:"Proje boşsa ya da dosya/dizin adları yanlışsa; not otomatik 0 olur."},
+  {name:"Incomplete Work", kind:"warn", desc:"Bazı fonksiyonlar eksik ya da çalışmıyor demek."},
+  {name:"Invalid Compilation", kind:"bad", desc:"-Wall -Wextra -Werror ile derleme başarısız olursa kullanılır."},
+  {name:"Norme Error", kind:"bad", desc:"Norminette hata verirse kullanılır, not otomatik 0 olur."},
+  {name:"Cheat", kind:"bad", desc:"Hile şüphesi durumunda kullanılır, değerlendirme hemen durur."},
+  {name:"Crash", kind:"bad", desc:"Program ya da testler sırasında segfault/çökme olursa kullanılır."},
+  {name:"Concerning Situation", kind:"warn", desc:"Net bir hata olmasa da değerlendiriciyi rahatsız eden bir durum."},
+  {name:"Leaks", kind:"bad", desc:"Bellek sızıntısı bulunursa kullanılır -- valgrind ile önceden kontrol et."},
+  {name:"Forbidden Function", kind:"bad", desc:"İzin verilmeyen bir libc fonksiyonu kullanıldığında işaretlenir."},
+  {name:"Can't Support / Explain Code", kind:"bad", desc:"Yazdığın (ya da canlı yeniden yazdığın) kodu açıklayamazsan kullanılır."},
+];
+
+function renderBilgi(){
+  const el = document.getElementById("tab-bilgi");
+  el.innerHTML = `
+    <h1 class="page-title">Bilgi Rehberi</h1>
+    <div class="page-sub">Puanlama etiketleri ve canlı kodlama stratejisi -- kısa referans.</div>
+
+    <div class="panel">
+      <h2>Canlı Yazarken İzleyeceğin 5 Adım</h2>
+      <ol style="font-size:12px; line-height:1.8;">
+        <li><b>Prototipi tam doğru yaz.</b> Parametre isimleri/tipleri ilk izlenimdir.</li>
+        <li><b>Önce değişkenlerini düşün, sonra döngüyü yaz.</b></li>
+        <li><b>Önce NULL / sınır kontrolünü yaz, sonra ana mantığı.</b></li>
+        <li><b>Norm'u elinden geldiğince uygula ama saplanma.</b> Tab kullan, mantığa odaklan.</li>
+        <li><b>Yazdıktan sonra sesli olarak mantığını anlat.</b> "Can't support / explain code" flag'inden en iyi böyle kaçınırsın.</li>
+      </ol>
+    </div>
+
+    <div class="panel">
+      <h2>Puanlama Etiketleri (Flags)</h2>
+      ${FLAG_INFO.map(function(f){
+        return `<div class="flag-card ${f.kind==='good'?'good':(f.kind==='warn'?'warn':'bad')}"><b>${f.name}</b><p style="margin:4px 0 0 0; font-size:11.5px;">${f.desc}</p></div>`;
+      }).join("")}
+    </div>
+
+    <div class="panel">
+      <h2>Evo Günü Son Kontrol</h2>
+      <ul style="font-size:12px; line-height:1.9;">
+        <li>git status temiz, git push yapıldı mı?</li>
+        <li>Temiz klasöre git clone edip orada make ve make bonus çalıştır.</li>
+        <li>norminette *.c *.h son bir kez OK diyor mu?</li>
+        <li>valgrind --leak-check=full ./test_libft sızıntısız mı?</li>
+        <li>README.md ilk satırı tam istenen italik formatta mı?</li>
+        <li>Bu sitedeki Canlı Kodlama sekmesinde en az bir kez her fonksiyonu denemiş ol.</li>
+      </ul>
+    </div>
+  `;
+}
+
+/* ==================================================================
+   BASLAT
+   ================================================================== */
+document.getElementById("resetBtn").addEventListener("click", function(){
+  if (confirm("Tüm ilerleme (denemeler, checklist, mock geçmişi) silinecek. Emin misin?")){
+    localStorage.removeItem(STORE_KEY);
+    STATE = loadStore();
+    resetMock();
+    FLASH.order = [];
+    switchTab(ACTIVE_TAB);
+    toast("İlerleme sıfırlandı.");
+  }
+});
+
+renderNav();
+switchTab("ozet");
+</script>
+</body>
+</html>
