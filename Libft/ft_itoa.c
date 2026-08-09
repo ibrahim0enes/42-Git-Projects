@@ -3,33 +3,33 @@
 /*                                                        :::      ::::::::   */
 /*   ft_itoa.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ibcolak <ibcolak@42.student.tr>            +#+  +:+       +#+        */
+/*   By: ibcolak <ibcolak@student.42.tr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/08/08 18:33:10 by ibcolak           #+#    #+#             */
-/*   Updated: 2026/08/08 20:37:38 by ibcolak          ###   ########.fr       */
+/*   Created: 2026/08/09 00:00:00 by ibcolak           #+#    #+#             */
+/*   Updated: 2026/08/09 00:00:00 by ibcolak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-static size_t ft_find_size(int n)
+static size_t	ft_find_size(int n)
 {
-    size_t len;
-    long num;
+	size_t	len;
+	long	num;
 
-    num = n;
-    len = 0;
-    if (num <= 0)
-    {
-        len++;
-        num = -num;
-    }
-    while (num > 0)
-    {
-        num /= 10;
-        len++;
-    }
-    return (len);
+	num = n;
+	len = 0;
+	if (num <= 0)
+	{
+		len++;
+		num = -num;
+	}
+	while (num > 0)
+	{
+		num /= 10;
+		len++;
+	}
+	return (len);
 }
 
 char	*ft_itoa(int n)

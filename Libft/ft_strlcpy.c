@@ -12,35 +12,22 @@
 
 #include "libft.h"
 
-size_t	strlcpy(char *dst, const char *src, size_t size)
+size_t	ft_strlcpy(char *dst, const char *src, size_t size)
 {
 	size_t	src_len;
 	size_t	i;
 
+	if (dst == NULL || src == NULL)
+		return (0);
 	src_len = ft_strlen(src);
 	if (size == 0)
 		return (src_len);
-	if (dst == NULL || src == NULL)
-		return (0);
 	i = 0;
 	while (i < size - 1 && src[i])
 	{
-		dst[i] = src[i++];
+		dst[i] = src[i];
+		i++;
 	}
 	dst[i] = '\0';
 	return (src_len);
-}
-
-int main(void)
-{
-	char dest[20];
-	const char *src = "Hello, World!";
-	size_t size = sizeof(dest);
-
-	size_t copied = strlcpy(dest, src, size);
-
-	printf("Copied: %zu\n", copied);
-	printf("Destination: %s\n", dest);
-
-	return 0;
 }

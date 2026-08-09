@@ -14,18 +14,18 @@
 
 char	*ft_strtrim(char const *s1, char const *set)
 {
-	char	start;
-	char	end;
+	size_t	start;
+	size_t	end;
 
 	if (!s1)
 		return (NULL);
 	if (!set)
-		return (ft_substr(s1));
+		return (ft_substr(s1, 0, ft_strlen(s1)));
 	start = 0;
 	end = ft_strlen(s1);
-	while (set[start] && ft_strrchr(set,s1[start]))
+	while (start < end && ft_strchr(set, s1[start]))
 		start++;
-	while (end > start && ft_strrchr[set,s1[end]])
+	while (end > start && ft_strchr(set, s1[end - 1]))
 		end--;
-	return (ft_substr(s1,start,end - start + 1));
+	return (ft_substr(s1, start, end - start));
 }
