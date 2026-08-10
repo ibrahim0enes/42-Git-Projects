@@ -1,0 +1,35 @@
+Libc Functions #1
+
+gcc -Wall -Wextra -Werror test_libft_1.c ft_isalpha.c ft_memset.c ft_isdigit.c ft_isalnum.c ft_isascii.c ft_isprint.c ft_strlen.c -o test_libft_1
+
+Libc Functions #2
+
+gcc -Wall -Wextra -Werror test_libft_2.c ft_bzero.c ft_memcpy.c ft_memmove.c ft_strlcpy.c ft_strlcat.c ft_memset.c ft_strlen.c -o test_libft_2
+
+Libc Functions #3
+
+gcc -Wall -Wextra -Werror test_libft_3.c ft_toupper.c ft_tolower.c ft_strchr.c ft_strrchr.c -o test_libft_3
+
+Libc Functions #4
+
+gcc -Wall -Wextra -Werror test_libft_4.c ft_strncmp.c ft_memchr.c ft_memcmp.c ft_strnstr.c ft_atoi.c ft_calloc.c ft_strdup.c ft_memset.c ft_strlen.c -o test_libft_4
+
+Additional Functions #1
+
+gcc -Wall -Wextra -Werror test_libft_5.c ft_substr.c ft_strjoin.c ft_strtrim.c ft_split.c ft_itoa.c ft_strmapi.c ft_strlen.c ft_strdup.c ft_strchr.c ft_calloc.c ft_memcpy.c ft_strlcpy.c ft_memset.c -o test_libft_5
+
+Additional Functions #2
+
+gcc -Wall -Wextra -Werror test_libft_6.c ft_striteri.c ft_putchar_fd.c ft_putstr_fd.c ft_putendl_fd.c ft_putnbr_fd.c -o test_libft_6
+
+Linked List Functions #1 
+
+gcc -Wall -Wextra -Werror test_libft_7.c ft_lstnew.c ft_lstadd_front.c ft_lstsize.c ft_lstlast.c ft_lstadd_back.c -o test_libft_7
+
+Linked List Functions #2
+
+gcc -Wall -Wextra -Werror test_libft_8.c ft_lstnew.c ft_lstadd_back.c ft_lstdelone.c ft_lstclear.c ft_lstiter.c ft_lstmap.c -o test_libft_8
+
+
+
+
