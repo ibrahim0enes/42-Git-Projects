@@ -3,16 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   ft_lstsize.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ibcolak <ibcolak@student.42.tr>            +#+  +:+       +#+        */
+/*   By: ibcolak <ibcolak@42.student.tr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/08/09 00:00:00 by ibcolak           #+#    #+#             */
-/*   Updated: 2026/08/09 00:00:00 by ibcolak          ###   ########.fr       */
+/*   Updated: 2026/08/12 16:32:05 by ibcolak          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-int	ft_lstsize(t_list *lst)
+unsigned int	ft_lstsize(t_list *lst)
 {
 	int	i;
 
